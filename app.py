@@ -20,6 +20,7 @@ def load_data():
     d = pd.read_csv(DATA)
     d["fecha"] = pd.to_datetime(d["fecha"])
     d["ruta"] = d["ruta"].astype(str)
+    d["mes"] = d["fecha"].dt.strftime("%Y-%m")
     return d
 
 df = load_data()
@@ -36,7 +37,7 @@ def aggregate_ipk(x, grain):
         pasajeros=("pasajeros","sum"),
         kilometros=("kilometros","sum"),
         registros=("ruta","size"),
-        pasajeros_nulos=("pasajeros","apply", lambda s: s.isna().sum()),
+        pasajeros_nulos=("pasajeros", lambda s: s.isna().sum()),
     )
     # Para IPK, el denominador se limita a los km cuya observación de pasajeros es válida.
     valid = x[x["pasajeros"].notna()].groupby(grain, as_index=False)["kilometros"].sum()
@@ -225,7 +226,7 @@ if len(valid_daily) >= 20:
         )
 
 # Best/worst month in current selection
-m_all = aggregate_ipk(d, ["mes"])
+m_all = aggregate_ipk(d, ["mes"]).dropna(subset=["ipk"])
 if not m_all.empty:
     bm = m_all.loc[m_all["ipk"].idxmax()]
     wm = m_all.loc[m_all["ipk"].idxmin()]

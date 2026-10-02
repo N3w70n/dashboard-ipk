@@ -18,7 +18,11 @@ DATA = BASE / "ipk_procesado.csv"
 @st.cache_data
 def load_data():
     d = pd.read_csv(DATA)
-    d["fecha"] = pd.to_datetime(d["fecha"])
+    d["fecha"] = pd.to_datetime(
+    d["fecha"],
+    format="mixed",
+    errors="coerce"
+)
     d["ruta"] = d["ruta"].astype(str)
     d["mes"] = d["fecha"].dt.strftime("%Y-%m")
     return d
